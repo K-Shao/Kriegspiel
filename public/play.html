@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <title>Live Kriegspiel</title>
+
+        <script src="lib/chessboard-0.3.0.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <script src="http://cdn.socket.io/socket.io-1.4.5.js"></script>
+        <script src="js/main.js"></script>
+        <script src="js/play.js"></script>
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+        <link rel="stylesheet" href="lib/chessboard-0.3.0.min.css">
+        <link rel="stylesheet" href="css/play.css">
+        <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+    </head>
+    <body>
+        <div class="row" id="navbar">
+            <a href="home.html">
+                <img src="img/chesspieces/wikipedia/wN.png" style="max-height:100%;">Kriegspiel
+            </a>
+        </div>
+        <div class="row" id="mainPane">
+            <div id="left" class="col-md-6">
+                <div id="boardWrapper">
+                    <div id="player2info">Black</div>
+                    <div id="gameBoard">Game Board</div>
+                    <div id="player1info">White</div>
+                </div>
+            </div>
+            <div id="mid" class="col-md-3">
+                <div id="gameControls">
+
+                    <button id="pawnCaptures" class="btn btn-block btn-info">Arbiter, are there any pawn captures?</button>
+                    <div>
+                        <textarea id="arbiterTranscript" readonly rows=28></textarea>
+                    </div>
+                    <div id="chat" class="row">
+                        <div id="chatGroup" class="col-md-10">
+                            <div id="chatLabel"><p>Chat: </p></div>
+                            <div id="chatBox"><input id="message" type="text"></div>
+                        </div>
+                        <div id="chatGroupRight" class="col-md-2"><button id="chatSend" class="btn btn-success">Send</button></div>
+                    </div>
+                    <hr>
+                    <div id="gameOptions">
+<!--                        <button class="btn btn-default" id="drawButton">Draw</button>-->
+                        <button class="btn btn-warning" id="resignButton">Resign</button>
+                    </div>
+                </div>
+            </div>
+            <div id="right" class="col-md-3">
+                <div id="challenge">
+                    <div id="myInfo"></div>
+                    <button id="openChallenge" class="btn btn-block btn-warning">Open challenge</button>
+                    <button id="cancelChallenge" class="btn btn-block btn-default">Cancel</button>
+                    
+<!--
+                    <p class="text-center">or</p>
+                    <button id="directChallenge" class="btn btn-warning">Direct challenge</button>
+                    <input id="challengeTarget">
+-->
+
+                    <hr>
+
+                    <div id="currentChallenges"></div>
+                </div>
+            </div>
+           
+        
+        </div>
+
+    </body>
+
+    
+
+</html>

@@ -1,0 +1,76 @@
+body {
+    padding:10px;
+    background-color:dimgray;
+}
+
+
+#title {
+    font-size: 100px;
+    font-family:cursive;
+    color:white;
+}
+h2 {
+    color: darkblue;
+    font-size: 40px;
+    font-family:cursive;
+}
+
+#main-pane {
+    margin-top: 30px;
+    padding:5px;
+}
+
+#left, #right {
+    padding: 8px
+}
+
+#left-pane, #right-pane {
+    background-color: white;
+    padding: 15px
+}
+
+.intro-image {
+    width: 100%;
+    margin: 0px;
+}
+
+.intro-image-container {
+    padding:0px;
+}
+
+
+#top-images {
+    margin:0px;
+}
+
+#login h1 {
+    font-family: roboto;
+    font-size: 30px;
+    margin : 0px;
+    margin-top: 10px;
+}
+
+#login input {
+    margin-bottom: 10px;
+}
+
+.login-help {
+    font-size: 12px;
+}
+
+hr {
+    border-width: 3px;
+}
+
+p {
+    font-family: roboto;   
+    font-size: 20px
+}
+
+li {
+    font-family: roboto;
+    text-align:left;
+    font-size: 16px;
+}
+
+

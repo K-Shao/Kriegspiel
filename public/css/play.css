@@ -1,0 +1,122 @@
+body {
+    background-color: dimgray;
+}
+
+#left, #mid, #right {
+    padding: 0px;
+}
+
+p {
+    font-size: 20px;
+    font-family: roboto;
+    margin: 3px;
+}
+
+#boardWrapper, #gameControls, #challenge {
+    background-color: white;
+    margin-left: 5px;
+    margin-right: 5px;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+#boardWrapper {
+    padding: 10px;
+}
+
+#gameBoard {
+    width: 100%;
+}
+
+#pawnCaptures {
+    font-size: 16px;
+    margin: 10px 0px 10px 0px;
+}
+
+#arbiterTranscript{
+    width: 100%;
+    resize: none;
+}
+
+#mainPane {
+    margin: 10px;
+}
+
+#chat {
+    margin: 10px 0px 0px 0px;
+}
+
+#chatBox input{
+    width: 100%;
+}
+
+#chatGroupRight, #chatBox, #chatLabel {
+    padding: 0px;
+    padding-left: 2px;
+}
+
+#chatLabel, #chatBox {
+    display: inline-block;
+}
+
+#chatLabel p {
+    font-size: 16px;
+    font-family: roboto;
+}
+
+#chatSend {
+    padding-bottom: 2px;
+    padding-top: 2px;
+}
+
+#chatBox input {
+    width: 100%;
+}
+
+#chatBox {
+    width: 80%;
+}
+
+#chatGroup {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+#challenge {
+    padding-top: 10px
+}
+
+
+#directChallenge {
+    float: left;
+    margin-right: 10px;
+}
+
+#player1info, #player2info {
+    font-size: 24px;
+    color: lightgray;
+    font-weight: bold;
+}
+
+#myInfo {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#navbar {
+    background-color: black;
+    height: 50px;
+    color: lightgray;
+    font-size: 30px;
+    font-family: cursive;
+    padding-left: 20px;
+}
+
+#navbar a {
+    color: lightgray;
+}
+
+#navbar a:hover {
+    text-decoration: none;
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Kriegspiel</title>
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/style.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <script src="js/main.js"></script>
+        <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+
+    </head>
+    <body>
+        <h1 class="text-center" id = "title">Kriegspiel</h1>
+        <h2 class="text-center">War in the Dark</h2>
+        <div id="main-pane" class="row">
+            
+            <div class="col-md-10" id="left">
+                <div id="left-pane">
+                    <div class="row" id="top-images">
+                        <div class="col-md-6 col-xs-6 intro-image-container"><img class="intro-image" src="img/intro2.png"></div>
+                        <div class="col-md-6 col-xs-6 intro-image-container"><img class="intro-image" src="img/intro1.png"></div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div id="about-kriegspiel" class="text-center col-md-6">
+                            <button data-toggle="collapse" data-target = "#about-text" class="btn btn-info btn-block">About Kriegspiel</button>
+                            <br>
+                            <div id="about-text" class="collapse">
+                                <p>Kriegspiel is a chess variant invented by Henry Michael Temple. German for "war game," Kriegspiel seeks to simulate the imperfect information during wartime, or "fog-of-war." In Kriegspiel, neither plays knows the other player's position, only his own. The arbiter, who has the true position, will give minimal amounts of information every move. Other than that, the normal rules of chess apply, and it's up to you to win the war in the dark. </p>
+                            </div>
+                        </div>
+
+                        <div id="rules-of-play" class="text-center col-md-6">
+                            <button data-toggle="collapse" data-target = "#rules-text" class="btn btn-info btn-block">Rules of play</button>
+                            <div id="rules-text" class="collapse">
+                                <p>There are no changes in the normal rules of chess, only the amount of information given. If unfamiliar with the rules of chess, look <a href="">here</a>. The arbiter will only announce the following (anything the arbiter announces is announced to both players):</p>
+                                <ul>
+                                    <li>White/Black has moved</li>
+                                    <li>White/Black has moved and captured on the square ___</li>
+                                    <li>White/Black has moved and delivered check from the (long/short) diagonal</li>
+                                    <li>White/Black has moved and delivered check from the (long/short) side of the (row/column)</li>
+                                    <li>White/Black has moved and delivered check with a knight</li>
+                                    <li>White/Black has delivered checkmate/drawn the game</li>
+                                    <li>That move is legal (you must make that move)</li>
+                                    <li>That move is not legal, try again</li>
+                                    <li>(When prompted) There (are/are not) possible pawn captures.</li>
+                                </ul>
+                                <p>Note that castles and pawn promotions are not announced.</p>
+                            </div>
+                        </div>
+                    
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="col-md-2" id="right">
+                <div id="right-pane">
+                    <div id="login">
+                        <form action="home.html" method="post">
+					       <h1 class="text-center">Login</h1><br>
+					       <input type="text" name="user" placeholder="Username" class="form-control" id="username">
+					       <input type="password" name="pass" placeholder="Password" class="form-control">
+					       <button name="login" id="login-submit" value="Login" class="btn btn-block btn-primary">Login</button>
+                        </form>
+                        
+				        <div class="login-help">
+					        <a href="login.html">Register</a> 
+                           
+				        </div>
+				    </div>
+                    
+                    <hr>
+                    
+                    <div id="quick-options">
+                        <input type="button" onclick="location.href='/play.html';" value="Play now!" class="btn btn-success btn-block">                   
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+
+</html>
