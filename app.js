@@ -2,7 +2,6 @@ var express = require("express");
 var app = express();
 var path = require("path");
 var http = require("http").Server(app);
-var port = 8080;
 var logic = require("./chesslogic");
 var sha1 = require("sha1");
 var mysql = require("mysql");
@@ -16,7 +15,11 @@ app.use(favicon(__dirname + "/public/img/favicon.ico"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-http.listen(port, function () {
+var server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080
+var server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1'
+ 
+
+http.listen(server_port, server_ip_address, function () {
     console.log("listening on port " + port);
 });
 
