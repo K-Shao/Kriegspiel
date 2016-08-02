@@ -11,6 +11,8 @@
         "jquery-form-validator":"2.3.33",
         "serve-favicon":"2.3.0"
     },
-    "main": "app.js"
-    
+    "main": "app.js",
+    "scripts": {
+        "start": "node app.js"
+    }
 }

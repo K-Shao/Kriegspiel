@@ -11,16 +11,21 @@ var Cookies = require("cookies");
 var bodyParser = require("body-parser");
 var favicon = require("serve-favicon");
 
+var databaseCredentials = 
+            {host: "localhost",
+             user: "root", 
+             password: "str0keseet", 
+            database: "kriegspiel"};
+
 app.use(favicon(__dirname + "/public/img/favicon.ico"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-var server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080
-var server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1'
- 
+var server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+var server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 
 http.listen(server_port, server_ip_address, function () {
-    console.log("listening on port " + port);
+    console.log("listening on port " + server_port);
 });
 
 app.post("/register", function(req, res) {
@@ -38,10 +43,22 @@ app.post("/register", function(req, res) {
     res.redirect("/home.html");
 });
 
+app.get("/home.html", function(req, res) {
+    checkLogin(req, res, function(result) {
+        if (result) {
+            res.sendfile(__dirname + "/public/home.html");
+        } else {
+            res.redirect("/index.html");
+        } 
+    });
+})
+
 app.post("/home.html", function(req, res) {
     var loggedIn;
+    if (!req.body.user || !req.body.pass) {
+        res.redirect("/index.html");
+    }
     var username = req.body.user;
-
     var password = sha1(username + req.body.pass);
     login.validate(username, password, function (result) {
         loggedIn = result;
@@ -93,12 +110,7 @@ function createUser (username, password) {
 }
 
 function getUser (username, callback) {
-    var con = mysql.createConnection(
-        {host: "localhost",
-        user: "root", 
-        password: "str0keseet", 
-        database: "kriegspiel"}
-    );
+    var con = mysql.createConnection(databaseCredentials);
     con.connect(function (err) {
         if (err) {
             console.log("Error connecting to database");
@@ -129,12 +141,7 @@ function checkLogin (req, res, callback) {
 }
 
 function handleGameOver (player1, player2, result) {
-    var con = mysql.createConnection(
-        {host: "localhost",
-        user: "root", 
-        password: "str0keseet", 
-        database: "kriegspiel"}
-    );
+    var con = mysql.createConnection(databaseCredentials);
     con.connect(function (err) {
         if (err) {
             console.log("Error connecting to database");

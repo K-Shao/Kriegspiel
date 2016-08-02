@@ -4,15 +4,14 @@
     var mysql = require("mysql");
     
     
-
-    
-    module.exports.createUser = function(username, passwordHash, email) {
-        var con = mysql.createConnection(
+    var databaseCredentials = 
             {host: "localhost",
              user: "root", 
              password: "str0keseet", 
-            database: "kriegspiel"}
-        );
+            database: "kriegspiel"};
+    
+    module.exports.createUser = function(username, passwordHash, email) {
+        var con = mysql.createConnection(databaseCredentials);
         con.connect(function (err) {
             if (err) {
                 console.log("Error connecting to database");
@@ -31,12 +30,7 @@
     };
     
     module.exports.validate = function (username, passwordHash, callback) {
-        var con = mysql.createConnection(
-            {host: "localhost",
-             user: "root", 
-             password: "str0keseet", 
-            database: "kriegspiel"}
-        );
+        var con = mysql.createConnection(databaseCredentials);
         con.connect(function (err) {
             if (err) {
                 console.log("Error connecting to database");
