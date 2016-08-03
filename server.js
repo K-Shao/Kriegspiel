@@ -253,7 +253,7 @@ io.on("connection", function(socket) {
         var game;
         var gameIndex, color;
         var gameOver = false;
-        for (index in games) {
+        for (var index in games) {
             var current = games[index];
             if (current.player1.username === moveData.username) {
                 game = current;

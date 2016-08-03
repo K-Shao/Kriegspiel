@@ -170,7 +170,7 @@ $(document).ready(function () {
         $("#player2info").text(opponent + " (" + opponentRating + ")");
         $("#player2info").css("color", "black");
         $("#gameOptions").show();
-        
+        arbiterAnnounce("Resumed game with " + opponent);
         
     });
     
