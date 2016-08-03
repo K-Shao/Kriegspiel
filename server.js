@@ -19,7 +19,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 var server_port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
 var server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 
-http.listen(server_port, server_ip_address, function () {
+http.listen(server_port, function () {
     console.log("listening on port " + server_port);
 });
 
@@ -135,15 +135,14 @@ function handleGameOver (player1, player2, result) {
             p1newrating = p1oldrating + (K * (S1-E1))
             p2newrating = p2oldrating + (K * (S2-E2));
             console.log(p1newrating);
-            con.execute("UPDATE users SET rating = ? WHERE username = ?;", [p1newrating, game.player1.username]);
-            con.execute("UPDATE users SET rating = ? WHERE username = ?;", [p2newrating, game.player2.username]);
+            mysql.execute("UPDATE users SET rating = ? WHERE username = ?;", [p1newrating, game.player1.username]);
+            mysql.execute("UPDATE users SET rating = ? WHERE username = ?;", [p2newrating, game.player2.username]);
             
             
             games.splice(index,1);
         }
 
     }
-    con.end();
 }
 
 
@@ -172,7 +171,14 @@ io.on("connection", function(socket) {
         if (!username) return;
         
         clients[username] = false;
-
+        
+        for (var index in openChallenges) {
+            if (openChallenges[index].username == username) {
+                openChallenges.splice(index, 1);
+                break;
+            }
+        }
+        
         setTimeout(function() {
 
             if (!clients[username]) {
