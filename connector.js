@@ -19,7 +19,7 @@ module.exports.execute = function (query, args) {
         return true;
     });
     con.end();
-}
+};
 
 module.exports.query = function (query, args, callback) {
     var con = mysql.createConnection(databaseCredentials);
@@ -32,5 +32,6 @@ module.exports.query = function (query, args, callback) {
     con.query(query, args, function(err, rows) {
         if (err) {throw err};
         callback(rows);
-    })
+    });
+    con.end();
 };
