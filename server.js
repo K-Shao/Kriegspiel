@@ -10,6 +10,7 @@ var Cookies = require("cookies");
 var bodyParser = require("body-parser");
 var favicon = require("serve-favicon");
 var User = require("./user.js");
+var mysql = require("./connector.js");
 
 app.use(favicon(__dirname + "/public/img/favicon.ico"));
 app.use(bodyParser.json());
@@ -117,17 +118,10 @@ function checkLogin (req, res, callback) {
 }
 
 function handleGameOver (player1, player2, result) {
-    var con = mysql.createConnection(databaseCredentials);
-    con.connect(function (err) {
-        if (err) {
-            console.log("Error connecting to database");
-            return;
-        } 
-    });
     for (var index in games) {
         var game = games[index];
         if (game.player1.username==player1.username && game.player2.username == player2.username ) {
-            con.query("INSERT INTO games (white, black, fen, pgn, result, datePlayed) values (?,?,?,?,?,NOW());", [game.player1.username, game.player2.username, game.chess.fen(), game.chess.pgn(), result], function(err) {});
+            mysql.execute("INSERT INTO games (white, black, fen, pgn, result, datePlayed) values (?,?,?,?,?,NOW());", [game.player1.username, game.player2.username, game.chess.fen(), game.chess.pgn(), result]);
             var p1newrating, p2newrating;
             var p1oldrating = games[index].player1.rating;
             var p2oldrating = games[index].player2.rating;
@@ -141,8 +135,8 @@ function handleGameOver (player1, player2, result) {
             p1newrating = p1oldrating + (K * (S1-E1))
             p2newrating = p2oldrating + (K * (S2-E2));
             console.log(p1newrating);
-            con.query("UPDATE users SET rating = ? WHERE username = ?;", [p1newrating, game.player1.username], function (err) {});
-            con.query("UPDATE users SET rating = ? WHERE username = ?;", [p2newrating, game.player2.username], function(err) {});
+            con.execute("UPDATE users SET rating = ? WHERE username = ?;", [p1newrating, game.player1.username]);
+            con.execute("UPDATE users SET rating = ? WHERE username = ?;", [p2newrating, game.player2.username]);
             
             
             games.splice(index,1);
@@ -192,11 +186,11 @@ io.on("connection", function(socket) {
                     if (!game) {
                         continue;
                     }
-                    if (username == games[index].player1) {
+                    if (username == games[index].player1.username) {
                         handleGameOver(game.player1, game.player2, -1); 
                         socket.broadcast.emit("gameover", game.chess.pgn());
                     } 
-                    if (username == games[index].player2) {
+                    if (username == games[index].player2.username) {
                         handleGameOver(game.player1, game.player2, 1);
                         socket.broadcast.emit("gameover", game.chess.pgn());
                     }
