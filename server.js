@@ -4,27 +4,21 @@ var path = require("path");
 var http = require("http").Server(app);
 var logic = require("./chesslogic");
 var sha1 = require("sha1");
-var mysql = require("mysql");
 var login = require("./accounts");
 var Chess = require("chess.js").Chess;
 var Cookies = require("cookies");
 var bodyParser = require("body-parser");
 var favicon = require("serve-favicon");
-
-var databaseCredentials = 
-            {host: "localhost",
-             user: "root", 
-             password: "str0keseet", 
-            database: "kriegspiel"};
+var User = require("./user.js");
 
 app.use(favicon(__dirname + "/public/img/favicon.ico"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-var server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+var server_port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
 var server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 
-http.listen(server_port, server_ip_address, function () {
+http.listen(server_port, function () {
     console.log("listening on port " + server_port);
 });
 
@@ -36,7 +30,7 @@ app.post("/register", function(req, res) {
     }
     var username = req.body.username;
     var password = sha1(username + req.body.password);
-    login.createUser(username, password, req.body.email);
+    User.createUser(username, password, req.body.email);
     var cookies = new Cookies(req, res);
     cookies.set("user", username, {httpOnly: false})
             .set("pass", password, {httpOnly: false});
@@ -57,6 +51,7 @@ app.post("/home.html", function(req, res) {
     var loggedIn;
     if (!req.body.user || !req.body.pass) {
         res.redirect("/index.html");
+        return;
     }
     var username = req.body.user;
     var password = sha1(username + req.body.pass);
@@ -100,28 +95,9 @@ app.get("/play.html", function(req, res) {
     });
 });
 
-
-
-
 app.use(express.static("public"));
 
-function createUser (username, password) {
-    login.createUser(username, sha1(username+password));
-}
 
-function getUser (username, callback) {
-    var con = mysql.createConnection(databaseCredentials);
-    con.connect(function (err) {
-        if (err) {
-            console.log("Error connecting to database");
-            return;
-        } 
-    });
-    con.query("SELECT * FROM users WHERE username = ?", username, function(error, rows) {
-        var user = new User(rows[0].username, rows[0].rating)
-        callback(user);
-    });
-}
 
 
 function checkLogin (req, res, callback) {
@@ -152,7 +128,6 @@ function handleGameOver (player1, player2, result) {
         var game = games[index];
         if (game.player1.username==player1.username && game.player2.username == player2.username ) {
             con.query("INSERT INTO games (white, black, fen, pgn, result, datePlayed) values (?,?,?,?,?,NOW());", [game.player1.username, game.player2.username, game.chess.fen(), game.chess.pgn(), result], function(err) {});
-            
             var p1newrating, p2newrating;
             var p1oldrating = games[index].player1.rating;
             var p2oldrating = games[index].player2.rating;
@@ -186,10 +161,6 @@ var Game = function (player1, player2) {
     this.board2 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 }
 
-var User = function (username, rating) {
-    this.username = username;
-    this.rating = rating;
-}
 
 
 
@@ -253,13 +224,13 @@ io.on("connection", function(socket) {
                     return;
                 }
             }
-            getUser(username, function(data) {
+            User.getUser(username, function(data) {
                 socket.emit("home", data);
             });
             return;
         } 
         console.log("Adding user " + username);
-        getUser(username, function(data) {
+        User.getUser(username, function(data) {
             socket.emit("home", data);
 
         })
@@ -269,7 +240,7 @@ io.on("connection", function(socket) {
     
     socket.on("openChallenge", function() {
         if (openChallenges.length > 0) {
-            getUser(username, function(player2) {
+            User.getUser(username, function(player2) {
                 var player1 = openChallenges.shift();
                 games.push(new Game(player1, player2));
                 console.log("New game with " + player1.username + " and " + player2.username);
@@ -277,7 +248,7 @@ io.on("connection", function(socket) {
                 socket.broadcast.emit("newgame", {"player1": player1, "player2": player2});
             });
         } else {
-            getUser(username, function(user) {
+            User.getUser(username, function(user) {
                 openChallenges.push(user);
             });
         }
@@ -384,7 +355,7 @@ io.on("connection", function(socket) {
         var game;
         for (var index in games) {
             var current = games[index];
-            if (current.player1 === username || current.player2 === username) {
+            if (current.player1.username === username || current.player2.username === username) {
                 game = current;
                 break;
             }
