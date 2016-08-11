@@ -12,12 +12,16 @@ p {
     margin: 3px;
 }
 
-#boardWrapper, #gameControls, #challenge {
+#boardWrapper, #gameControls, #challenge, #instructions {
     background-color: white;
     margin-left: 5px;
     margin-right: 5px;
     padding: 5px;
     border-radius: 5px;
+
+}
+#challenge {
+    margin-bottom: 10px;
 }
 
 #boardWrapper {
