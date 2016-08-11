@@ -10,6 +10,8 @@ var board;
 var username;
 var opponent;
 
+var q = false, r = false, b = false, n = false, p = false;
+
 var getCookie = function(name) {
   match = document.cookie.match(new RegExp(name + '=([^;]+)'));
   if (match) return match[1];
@@ -72,6 +74,49 @@ function announce (announcer, msg) {
 $(document).ready(function () {
     $("#gameOptions").hide();
     $("#cancelChallenge").hide();
+    
+    $(document).keydown(function (e) {
+        switch (e.which) {
+            case 81: q = true; break;
+            case 82: r = true; break;
+            case 66: b = true; break;
+            case 78: n = true; break;
+            case 80: p = true; break;
+        }
+    });
+    
+    $(document).keyup(function (e) {
+        switch (e.which) {
+            case 81: q = false; break;
+            case 82: r = false; break;
+            case 66: b = false; break;
+            case 78: n = false; break;
+            case 80: p = false; break;
+        }                  
+    });
+    
+    $("#gameBoard").click(function(event) {
+        var square = event.target.getAttribute("data-square");
+        var pieceColor = (myColor == "white")?"b":"w";
+        if (square in board.position()) {
+            return;
+        }
+        var keysPressed = 0;
+        if (q) keysPressed++;
+        if (r) keysPressed++;
+        if (b) keysPressed++;
+        if (n) keysPressed++;
+        if (p) keysPressed++;
+        if (keysPressed == 1) {
+            var currentPosition = board.position();
+            if (q) {currentPosition[square] = pieceColor + "Q";}
+            if (r) {currentPosition[square] = pieceColor + "R";}
+            if (b) {currentPosition[square] = pieceColor + "B";}
+            if (n) {currentPosition[square] = pieceColor + "N";}
+            if (p) {currentPosition[square] = pieceColor + "P";}
+            board.position(currentPosition);
+        }
+    });
     
     socket = io();
 
@@ -258,8 +303,9 @@ $(document).ready(function () {
         if (!challengeExtended && !inGame) {
             socket.emit("openChallenge");
             challengeExtended = true;
+            $("#cancelChallenge").show();
+
         }
-        $("#cancelChallenge").show();
     });
     
     $("#cancelChallenge").click(function(e) {
