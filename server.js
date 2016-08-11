@@ -239,7 +239,11 @@ io.on("connection", function(socket) {
     });
     
     socket.on("openChallenge", function() {
-        if (username in openChallenges) {return;}
+        for (var index in openChallenges) {
+            if (openChallenges[index].username == username) {
+                return;
+            }
+        }
         if (openChallenges.length > 0) {
             User.getUser(username, function(player2) {
                 var player1 = openChallenges.shift();
