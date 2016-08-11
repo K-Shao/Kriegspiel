@@ -6,12 +6,8 @@ var databaseCredentials =
   password : process.env.OPENSHIFT_MYSQL_DB_PASSWORD || "str0keseet",
   port     : process.env.OPENSHIFT_MYSQL_DB_PORT,
   database : process.env.OPENSHIFT_APP_NAME || "kriegspiel"
- }
+ };
     
-            {host: "localhost",
-             user: "root", 
-             password: "str0keseet", 
-            database: "kriegspiel"};
 
 var mysql = require("mysql");
 
