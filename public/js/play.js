@@ -255,7 +255,7 @@ $(document).ready(function () {
     }); 
     
     $("#openChallenge").click(function(e) {
-        if (!challengeExtended) {
+        if (!challengeExtended && !inGame) {
             socket.emit("openChallenge");
             challengeExtended = true;
         }
