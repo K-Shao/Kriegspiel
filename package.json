@@ -2,14 +2,15 @@
     "name": "kriegspiel",
     "author": "Kevin Shao",
     "dependencies": {
-        "express":"4.2.x",
-        "chess.js":"0.10.2",
-        "node-mysql":"0.4.2",
-        "sha1":"1.1.1",
-        "cookies":"0.6.1",
-        "body-parser":"1.15.2",
-        "jquery-form-validator":"2.3.33",
-        "serve-favicon":"2.3.0"
+        "body-parser": "1.15.2",
+        "chess.js": "0.10.2",
+        "cookies": "0.6.1",
+        "express": "4.2.x",
+        "jquery-form-validator": "2.3.33",
+        "node-mysql": "0.4.2",
+        "serve-favicon": "2.3.0",
+        "sha1": "1.1.1",
+        "socket.io": "^3.0.3"
     },
     "main": "server.js",
     "scripts": {
