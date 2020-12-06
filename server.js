@@ -27,8 +27,10 @@ app.post("/register", function(req, res) {
 
     if ((!req.body.username)||(!req.body.password)||(!req.body.email)) {
         res.redirect("/login.html");
+        console.log("Registration failed: one of username, password, or email missing.")
         return;
     }
+    console.log("Registering new user: " + req.body.username + ". Email: " + req.body.email + ". Password: you wish.")
     var username = req.body.username;
     var password = sha1(username + req.body.password);
     User.createUser(username, password, req.body.email);
@@ -52,6 +54,7 @@ app.post("/home.html", function(req, res) {
     var loggedIn;
     if (!req.body.user || !req.body.pass) {
         res.redirect("/index.html");
+        console.log("Request to log in is missing either username or password. ")
         return;
     }
     var username = req.body.user;
