@@ -5,7 +5,7 @@
         "body-parser": "1.15.2",
         "chess.js": "0.10.2",
         "cookies": "0.6.1",
-        "express": "4.2.x",
+        "express": "4.5.x",
         "jquery-form-validator": "2.3.33",
         "node-mysql": "0.4.2",
         "serve-favicon": "2.3.0",
