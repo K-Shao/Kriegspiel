@@ -19,7 +19,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 var server_port = process.env.PORT || 3000;
 var server_ip_address = process.env.IP || '127.0.0.1';
 
-http.listen(server_port, server_ip_address, function () {
+//http.listen(server_port, server_ip_address, function () {
+http.listen(server_port, function () {
     console.log("listening on port " + server_port);
 });
 
