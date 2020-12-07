@@ -10,7 +10,7 @@ var Cookies = require("cookies");
 var bodyParser = require("body-parser");
 var favicon = require("serve-favicon");
 var User = require("./user.js");
-var mysql = require("./connector.js");
+var db = require("./postgre.js");
 
 app.use(favicon(__dirname + "/public/img/favicon.ico"));
 app.use(bodyParser.json());
@@ -43,7 +43,7 @@ app.post("/register", function(req, res) {
 app.get("/home.html", function(req, res) {
     checkLogin(req, res, function(result) {
         if (result) {
-            res.sendfile(__dirname + "/public/home.html");
+            res.sendFile(__dirname + "/public/home.html");
         } else {
             res.redirect("/index.html");
         } 
@@ -84,7 +84,7 @@ app.get("/index.html", function(req, res) {
         if (result) {
             res.redirect("/home.html");
         } else {
-            res.sendfile(__dirname + "/public/index.html");
+            res.sendFile(__dirname + "/public/index.html");
         }
     });
 });
@@ -92,7 +92,7 @@ app.get("/index.html", function(req, res) {
 app.get("/play.html", function(req, res) {
     checkLogin(req, res, function(result) {
         if (result) {
-            res.sendfile(__dirname + "/public/play.html");
+            res.sendFile(__dirname + "/public/play.html");
         } else {
             res.redirect("/login.html");
         }
@@ -124,7 +124,7 @@ function handleGameOver (player1, player2, result) {
     for (var index in games) {
         var game = games[index];
         if (game.player1.username==player1.username && game.player2.username == player2.username ) {
-            mysql.execute("INSERT INTO games (white, black, fen, pgn, result, datePlayed) values (?,?,?,?,?,NOW());", [game.player1.username, game.player2.username, game.chess.fen(), game.chess.pgn(), result]);
+            db.execute("INSERT INTO games (white, black, fen, pgn, result, datePlayed) values ($1,$2,$3,$4,$5,NOW());", [game.player1.username, game.player2.username, game.chess.fen(), game.chess.pgn(), result]);
             var p1newrating, p2newrating;
             var p1oldrating = games[index].player1.rating;
             var p2oldrating = games[index].player2.rating;
@@ -138,8 +138,8 @@ function handleGameOver (player1, player2, result) {
             p1newrating = p1oldrating + (K * (S1-E1))
             p2newrating = p2oldrating + (K * (S2-E2));
             console.log(p1newrating);
-            mysql.execute("UPDATE users SET rating = ? WHERE username = ?;", [p1newrating, game.player1.username]);
-            mysql.execute("UPDATE users SET rating = ? WHERE username = ?;", [p2newrating, game.player2.username]);
+            db.execute("UPDATE users SET rating = $1 WHERE username = $2;", [p1newrating, game.player1.username]);
+            db.execute("UPDATE users SET rating = $1 WHERE username = $2;", [p2newrating, game.player2.username]);
             
             
             games.splice(index,1);
@@ -167,8 +167,9 @@ var games = [];
 
 var io = require("socket.io")(http);
 io.on("connection", function(socket) {
-    
     var username;
+    
+    console.log("New connection!");
     
     socket.on("disconnect", function() {
         if (!username) return;
@@ -242,6 +243,7 @@ io.on("connection", function(socket) {
     });
     
     socket.on("openChallenge", function() {
+        console.log("Open challenge from " + username);
         for (var index in openChallenges) {
             if (openChallenges[index].username == username) {
                 return;
@@ -281,11 +283,11 @@ io.on("connection", function(socket) {
                 color = false;
                 break;
             }
-        }
-        
+        }        
         var move = game.chess.move({"from": moveData.from, 
                                    "to" : moveData.to, 
-                                   "promotion": "q"});
+                                   "promotion": "q", 
+                                   "piece": moveData.piece});
         
         if (move===null) {
             //Illegal move, inform as such

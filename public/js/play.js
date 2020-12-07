@@ -56,7 +56,7 @@ var initGame = function (color, fen) {
     if (fen) {
         configurations.position = fen;
     }
-    board = ChessBoard("gameBoard", configurations);  
+    board = Chessboard("gameBoard", configurations);  
 };
 
 
@@ -74,7 +74,7 @@ function announce (announcer, msg) {
 $(document).ready(function () {
     $("#gameOptions").hide();
     $("#cancelChallenge").hide();
-    
+    initGame("white");
     $(document).keydown(function (e) {
         switch (e.which) {
             case 81: q = true; break;
@@ -118,7 +118,7 @@ $(document).ready(function () {
         }
     });
     
-    socket = io();
+    socket = io({transports:['websocket']}); 
 
     username = getCookie("user");
     if (username) {
@@ -186,7 +186,7 @@ $(document).ready(function () {
             $("#player1info").css("color", "black");
             $("#player2info").text(opponent + " (" + opponentRating + ")");
             $("#player2info").css("color", "black");
-            $("#gameOptions").show();
+            $("cOptions").show();
         }
     });
     
@@ -235,6 +235,8 @@ $(document).ready(function () {
     socket.on("makeMove", function(moveData) {
         var m = moveData.from + "-" + moveData.to;
         board.move(m);
+        
+        //Now gotta handle castling. 
         if (m=="e1-g1") {
             board.move("h1-f1");
         }
@@ -247,6 +249,22 @@ $(document).ready(function () {
         if (m=="e8-c8") {
             board.move("a8-d8");
         }
+        
+        //Now gotta handle pawn promotions. 
+        piece = moveData.piece.charAt(1);
+        targetRank = moveData.to.charAt(1)
+        console.log(piece, targetRank);
+        console.log(piece === 'P')
+        console.log((targetRank === '1' || targetRank === '8'))
+        console.log(piece === 'P' && (targetRank === 1 || targetRank === 8));
+        if (piece === 'P' && (targetRank === '1' || targetRank === '8')) {
+            console.log("Promoting")
+            position = board.position();
+            position[moveData.to] = moveData.piece.charAt(0) + 'Q';
+            board.position(position, false);
+        }
+        
+        
     });
     
     socket.on("capture", function (square) {
