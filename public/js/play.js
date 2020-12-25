@@ -5,10 +5,17 @@ var turn = false;
 var inGame = false;
 var challengeExtended = false;
 
+var currentChatBackgroundColor = "gray";
+
 var board;
 
 var username;
 var opponent;
+
+var roomId;
+
+var currentLineNumber;
+var lastMoveColor;
 
 var q = false, r = false, b = false, n = false, p = false;
 
@@ -37,7 +44,12 @@ var initGame = function (color, fen) {
         }
         if ((piece.search(/w/) === -1 && myColor === "black") || (piece.search(/b/) === -1 && myColor === "white")) {
             if (target !== source) {
-                socket.emit("moveAttempt", {"username": username, "from": source, "to": target, "piece": piece}, newPos); 
+                socket.emit("moveAttempt", {"username": username, 
+                                            "from": source, 
+                                            "to": target, 
+                                            "piece": piece, 
+                                            "id": roomId}, 
+                                            newPos); 
             }
             return 'snapback';
         } 
@@ -59,16 +71,32 @@ var initGame = function (color, fen) {
     board = Chessboard("gameBoard", configurations);  
 };
 
+function gameHistoryUpdate (moveCode) {
+    $(".lastMoveCell").removeClass("lastMoveCell");
+    if (lastMoveColor == "black") {
+        currentLineNumber++;
+        $('#history').append("<div class='gameHistoryLine'>"
+                               + "<div class='gameMoveNumberCell'>" + currentLineNumber + ".</div>"
+                               + "<div class='gameHistoryCell lastMoveCell'>" + moveCode + "</div>"
+                           + "</div>"); 
+        lastMoveColor = "white";
+    } else {
+        $('#history').children().last().append("<div class='gameHistoryCell lastMoveCell'>" + moveCode + "</div>");
+        lastMoveColor = "black";
+    }
+    
+    $('#history').scrollTop($('#history')[0].scrollHeight);
+}
 
-
-function arbiterAnnounce (newMsg) {
-    $("#arbiterTranscript").append("Arbiter: " + newMsg + "\n");
-     $('#arbiterTranscript').scrollTop($('#arbiterTranscript')[0].scrollHeight);
+function arbiterAnnounce (msg) {
+    announce("Arbiter", msg);
 }
 
 function announce (announcer, msg) {
-    $("#arbiterTranscript").append(announcer + ": " + msg + "\n");
+    $('.newMessage').removeClass('newMessage');
+    $('#arbiterTranscript').append('<div class="' + currentChatBackgroundColor + ' newMessage">' + announcer + ": " + msg + "</div>");
     $('#arbiterTranscript').scrollTop($('#arbiterTranscript')[0].scrollHeight);
+    currentChatBackgroundColor = currentChatBackgroundColor == 'gray'? 'white': 'gray';
 }
 
 $(document).ready(function () {
@@ -129,7 +157,7 @@ $(document).ready(function () {
     $("#message").keypress(function(event) {
         if (event.which === 13) { //Enter key
             if ($("#message").val() !== "") {
-                socket.emit("messageSend", $("#message").val());
+                socket.emit("messageSend", $("#message").val(), roomId);
                 $("#message").val("");
             }
         }
@@ -137,34 +165,41 @@ $(document).ready(function () {
     
     $("#chatSend").click(function () {
         if ($("#message").val()!=="") {
-            socket.emit("messageSend", $("#message").val());
+            socket.emit("messageSend", $("#message").val(), roomId);
             $("#message").val("");
         }
     });
     
     $("#pawnCaptures").click(function() {
         if (inGame && turn) {
-            socket.emit("messageSend", "Arbiter, are there any pawn captures?");
-            socket.emit("pawnCapturesQuery");
+            socket.emit("messageSend", "Arbiter, are there any pawn captures?", roomId);
+            socket.emit("pawnCapturesQuery", roomId);
         }
     });
     
     $("#drawButton").click(function() {
-        socket.emit("drawOffer");
+        socket.emit("drawOffer", roomId);
     });
     
     $("#resignButton").click(function() {
-        socket.emit("resign");    
+        socket.emit("resign", roomId);    
     });
     
     socket.on("newgame", function(data) {
+ 
         var p1 = data.player1;
         var p2 = data.player2;
+        var id = data.id;
         var myRating, opponentRating;
         if (username==p1.username || username==p2.username) {
-            arbiterAnnounce ("New game between " + p1.username + " and " + p2.username + ". " + p1.username + " plays White; it is their move.");
-            $("#arbiterTranscript").text();
+            socket.emit("joinGame", id);
+            roomId = id;
+            currentLineNumber = 0;
+            lastMoveColor = "black";
+            $("#arbiterTranscript").empty();
+            $("#history").empty();
             $("#cancelChallenge").hide();
+            arbiterAnnounce ("New game between " + p1.username + " and " + p2.username + ". " + p1.username + " plays White; it is their move.");
             inGame = true;
             challengeExtended = false;
             if (username==p1.username) {
@@ -188,6 +223,8 @@ $(document).ready(function () {
             $("#player2info").css("color", "black");
             $("cOptions").show();
         }
+        
+        document.getElementById('new-game-audio').play();
     });
     
     socket.on("resumeGame", function(data, fen, gameTurn) {
@@ -227,9 +264,11 @@ $(document).ready(function () {
         arbiterAnnounce(username + ", that move is not legal. ");
     });
     
-    socket.on("moveMade", function(msg) {
+    socket.on("moveMade", function(msg, moveCode) {
         arbiterAnnounce(msg);
+        gameHistoryUpdate(moveCode);
         turn = !turn;
+        document.getElementById("piece-drop-audio").play();
     });
     
     socket.on("makeMove", function(moveData) {
@@ -253,18 +292,13 @@ $(document).ready(function () {
         //Now gotta handle pawn promotions. 
         piece = moveData.piece.charAt(1);
         targetRank = moveData.to.charAt(1)
-        console.log(piece, targetRank);
-        console.log(piece === 'P')
-        console.log((targetRank === '1' || targetRank === '8'))
-        console.log(piece === 'P' && (targetRank === 1 || targetRank === 8));
+
         if (piece === 'P' && (targetRank === '1' || targetRank === '8')) {
             console.log("Promoting")
             position = board.position();
             position[moveData.to] = moveData.piece.charAt(0) + 'Q';
             board.position(position, false);
         }
-        
-        
     });
     
     socket.on("capture", function (square) {
@@ -297,9 +331,11 @@ $(document).ready(function () {
     });
     
     socket.on("gameover", function(pgn) {
+        console.log("Here");
         inGame = false;
         arbiterAnnounce("Game history: " + pgn);
         $("#gameOptions").hide();
+        socket.emit("leaveGame", roomId);
     });
     
     socket.on("resignation", function(resigner) {
@@ -311,6 +347,10 @@ $(document).ready(function () {
     socket.on("home", function(me) {
         $("#myInfo").text(me.username + " (" + me.rating + ")");
         initGame("white");
+    });
+    
+    socket.on("updateNumOnline", function (numOnline) {
+        $("#player-count").text("Players online: " + numOnline);
     });
     
     $("#pawnCaptures").click(function(e) { 

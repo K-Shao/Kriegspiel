@@ -2,7 +2,6 @@
     <head>
         <title>Live Kriegspiel</title>
 
-<!--        <script src="lib/chessboard-0.3.0.min.js"></script>-->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
         <script src="lib/chessboardjs-1.0.0/js/chessboard-1.0.0.js"></script>
@@ -10,7 +9,6 @@
         <script src="js/main.js"></script>
         <script src="js/play.js"></script>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-<!--        <link rel="stylesheet" href="lib/chessboard-0.3.0.min.css">-->
         <link rel="stylesheet" href="lib/chessboardjs-1.0.0/css/chessboard-1.0.0.css">
         <link rel="stylesheet" href="css/play.css">
         <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
@@ -33,8 +31,8 @@
                 <div id="gameControls">
 
                     <button id="pawnCaptures" class="btn btn-block btn-info">Arbiter, are there any pawn captures?</button>
-                    <div>
-                        <textarea id="arbiterTranscript" readonly rows=28></textarea>
+                    <div id="arbiterTranscriptContainer">
+                        <div id="arbiterTranscript" readonly rows=28></div>
                     </div>
                     <div id="chat" class="row">
                         <div id="chatGroup" class="col-md-10">
@@ -48,6 +46,9 @@
 <!--                        <button class="btn btn-default" id="drawButton">Draw</button>-->
                         <button class="btn btn-warning" id="resignButton">Resign</button>
                     </div>
+                </div>
+                <div id="gameHistory">
+                    <div id="history" readonly rows=28></div>  
                 </div>
             </div>
             <div id="right" class="col-md-3">
@@ -67,10 +68,16 @@
                 <div id = "instructions">
                     <p>Add more enemy pieces by holding q/r/b/n/p and clicking on an empty square. </p>
                 </div>
+                <div id = "lobby">
+                    <p id="player-count">Players online: </p>
+                </div>
             </div>
            
         
         </div>
+        <audio id="piece-drop-audio" src="resources/drop.ogg"></audio>
+        <audio id="new-game-audio" src="resources/alert.ogg"></audio>
+
 
     </body>
 

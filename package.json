@@ -8,6 +8,7 @@
         "express": "^4.17.1",
         "jquery-form-validator": "2.3.33",
         "node-mysql": "0.4.2",
+        "nodemailer": "^6.4.16",
         "pg": "^8.5.1",
         "serve-favicon": "^2.5.0",
         "sha1": "1.1.1",
