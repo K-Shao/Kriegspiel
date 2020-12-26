@@ -27,7 +27,7 @@ http.listen(server_port, function () {
     console.log("listening on port " + server_port);
 });
 
-app.post("/register", function(req, res) {
+app.post("/register", async function(req, res) {
 
     if ((!req.body.username)||(!req.body.password)||(!req.body.email)) {
         res.redirect("/login.html");
@@ -39,26 +39,34 @@ app.post("/register", function(req, res) {
     var password = sha1(username + req.body.password);
     var email = req.body.email;
     
-    if (accounts.checkUserExists(username)) {
+    let userExists = await accounts.checkUserExists(username);
+    if (userExists) {
         console.log("Username already in use!");
         res.redirect("/home.html");
         return;
     }
     
-    if (accounts.checkEmailUsed(email)) {
+    let emailUsed = await accounts.checkEmailUsed(email);
+    if (emailUsed) {
         console.log("Email already in use!");
         res.redirect("/home.html");
         return;
     }
     
-    User.createUser(username, password, email);
+    var verificationHash = User.createUser(username, password, email);
     var cookies = new Cookies(req, res);
     cookies.set("user", username, {httpOnly: false})
            .set("pass", password, {httpOnly: false});
     
-    let link ="http://"+req.get('host')+"/verify?id=12345";
+    let link ="http://"+req.get('host')+"/verify?user=" + username + "&id=" + verificationHash;
     mailer.sendVerification(link, email);
     res.redirect("/home.html");
+});
+
+app.get("/verify", async function(req, res) {
+    console.log(req);
+    await login.verifyUser(req.query.user, req.query.id);
+    res.redirect("/index.html");
 });
 
 app.get("/home.html", function(req, res) {

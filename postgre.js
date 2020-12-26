@@ -23,11 +23,10 @@ module.exports.execute = function (query, args) {
         if (err) {throw err;}
         client.end();
         return true;
-        
     });
 };
 
-module.exports.query = function (query, args, callback) {
+module.exports.query = async function (query, args) {
     const client = new Client(credentials)
     client.connect(function (err) {
         if (err) {
@@ -35,9 +34,9 @@ module.exports.query = function (query, args, callback) {
             return false;
         } 
     });   
-    client.query(query, args, function(err, res) {
-        if (err) {throw err};
-        callback(res.rows);
-        client.end();
-    });
+    var result;
+    
+    const res = await client.query(query, args);
+    client.end()
+    return res.rows;
 };

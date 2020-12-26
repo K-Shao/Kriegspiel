@@ -9,7 +9,7 @@ var User = function (username, rating, email) {
 }
 
 module.exports.createUser = function (username, password, email) {
-    login.createUser(username, password, email);
+    return login.createUser(username, password, email);
 }
 
 module.exports.getUser = function (username, callback) {
