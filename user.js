@@ -12,10 +12,8 @@ module.exports.createUser = function (username, password, email) {
     return login.createUser(username, password, email);
 }
 
-module.exports.getUser = function (username, callback) {
-    db.query("SELECT * FROM users WHERE username = $1", [username], function(rows) {
-        var user = new User(rows[0].username, rows[0].rating)
-        callback(user);
-    });
-
+module.exports.getUser = async function (username, callback) {
+    var rows = await db.query("SELECT * FROM users WHERE username = $1", [username]);
+    var user = new User(rows[0].username, rows[0].rating);
+    callback(user);
 }

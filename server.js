@@ -288,8 +288,9 @@ io.on("connection", function(socket) {
     
     socket.on("openChallenge", function() {
         console.log("Open challenge from " + username);
-        for (var index in openChallenges) {
-            if (openChallenges[index].username == username) {
+        console.log(openChallenges);
+        for (var challenge of openChallenges) {
+            if (challenge.username == username) {
                 return;
             }
         }
