@@ -149,9 +149,16 @@ function checkLogin (req, res, callback) {
     }
 }
 
-function handleGameOver (game, result) {
-    console.log("Game over: " + game.player1.username + " vs. " + game.player2.username + " with result " + result + ".");
-
+function handleGameOver (game, result, reason) {
+    console.log("Game over: " + game.player1.username + " vs. " + game.player2.username + " with result " + result + ". Reason: " + reason);
+    io.to("room" + game.id).emit("gameover", game.chess.pgn(), reason);
+    if (game.whiteMove) {
+        game.p1time -= (Date.now() - game.lastMoveTime);
+    } else {
+        game.p2time -= (Date.now() - game.lastMoveTime);
+    }
+    io.to("room" + game.id).emit("timeState", new TimeState(game.p1time, game.p2time, "none"));
+    
     db.execute("INSERT INTO games (white, black, fen, pgn, result, datePlayed) values ($1,$2,$3,$4,$5,NOW());", [game.player1.username, game.player2.username, game.chess.fen(), game.chess.pgn(), result]);
     var p1newrating, p2newrating;
     var p1oldrating = game.player1.rating;
@@ -189,6 +196,9 @@ function buildHiddenMoveCode (capture, to, check, checkmate) {
     return code;
 }
 
+let INITIAL_TIME = 300000; // 5 minutes
+let INCREMENT = 20000; // 20 seconds
+
 var Game = function (player1, player2) {
     if (Math.random() > 0.5) {
         this.player1 = player1;
@@ -203,6 +213,20 @@ var Game = function (player1, player2) {
     this.board2 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
     this.whiteMove = true;
     this.id = crypto.randomBytes(20).toString('hex');
+    this.lastMoveTime = Date.now();
+    this.p1time = INITIAL_TIME;
+    this.p2time = INITIAL_TIME;
+    this.increment = INCREMENT;
+    let game = this;
+    this.timeOutEvent = setTimeout(function () {
+        handleGameOver(game, -1, "timeout");
+    }, this.p1time);
+}
+
+var TimeState = function (player1time, player2time, runningSide) {
+    this.player1time = Math.floor(player1time/1000);
+    this.player2time = Math.floor(player2time/1000);
+    this.runningSide = runningSide;
 }
 
 
@@ -245,12 +269,10 @@ io.on("connection", function(socket) {
                         continue;
                     }
                     if (username == games[index].player1.username) {
-                        handleGameOver(game, -1); 
-                        socket.broadcast.emit("gameover", game.chess.pgn());
+                        handleGameOver(game, -1, "disconnect"); 
                     } 
                     if (username == games[index].player2.username) {
-                        handleGameOver(game, 1);
-                        socket.broadcast.emit("gameover", game.chess.pgn());
+                        handleGameOver(game, 1, "disconnect");
                     }
                 }
                 socket.broadcast.emit("userDisconnect", username);
@@ -288,8 +310,6 @@ io.on("connection", function(socket) {
         User.getUser(username, function(data) {
             socket.emit("home", data);
         })
-
-
     });
     
     socket.on("openChallenge", function() {
@@ -304,7 +324,7 @@ io.on("connection", function(socket) {
                 var player1 = openChallenges.shift();
                 var game = new Game(player1, player2);
                 games[game.id] = game;
-                io.to("lobby").emit("newgame", game);
+                io.to("lobby").emit("newgame", game.player1, game.player2, game.id);
                 console.log("New game with " + player1.username + " and " + player2.username);
             });
         } else {
@@ -317,6 +337,7 @@ io.on("connection", function(socket) {
     socket.on("joinGame", function (id) {
         console.log(username + " joining game " + id);
         socket.join("room" + id);
+        io.to("room" + id).emit("timeState", new TimeState(games[id].p1time, games[id].p2time, "white"));
     });
     
     socket.on("leaveGame", function (id) {
@@ -363,7 +384,20 @@ io.on("connection", function(socket) {
                 games[roomId].board2 = fen;
             }
 
-            //Legal move, inform mover that move was legal, inform everyone move was made
+            //Legal move, update the clock, inform mover that move was legal, inform everyone move was made
+            if (game.lastMoveTime!==null) {
+                if (game.whiteMove) {
+                    game.p1time -= (Date.now() - game.lastMoveTime - game.increment);
+                } else {
+                    game.p2time -= (Date.now() - game.lastMoveTime - game.increment);
+                }
+            }
+            clearTimeout(game.timeOutEvent);
+            game.lastMoveTime = Date.now();
+            game.timeOutEvent = setTimeout(function () {
+                handleGameOver(game, game.whiteMove?1:-1, "timeout");//If it's currently white to move, then the timeout should have white win (because next it's black's turn)
+            }, game.whiteMove?game.p2time:game.p1time); 
+                 
             var result; //Only used for game over situations
             var msg = moveData.username + " has moved";
             var check = false, checkmate = false, capture = false;
@@ -407,11 +441,12 @@ io.on("connection", function(socket) {
             socket.emit("moveMade", msg, move.san) // For the person who made the move, just use SAN (Standard Algebraic Notation)
             socket.emit("makeMove", moveData); // Only make the move on the socket that the move came on. 
             game.whiteMove = !game.whiteMove;
+            io.to("room" + roomId).emit("timeState", new TimeState(game.p1time, game.p2time, game.whiteMove?"white":"black")); 
             
             if (gameOver) {
                 //Game over code here
-                io.to("room" + roomId).emit("gameover", game.chess.pgn());
-                handleGameOver(game, result);
+                io.to("room" + roomId).emit("timeState", new TimeState(game.p1time, game.p2time, "none")); 
+                handleGameOver(game, result, "gameover");
             }
 
         } 
@@ -422,8 +457,7 @@ io.on("connection", function(socket) {
             var game = games[index];
             if (game.player1.username == username || game.player2.username == username) {
                 var result = (game.player1.username == username)?-1:1;
-                handleGameOver(game, result);
-                io.to("room" + game.id).emit("gameover", game.chess.pgn());
+                handleGameOver(game, result, "resign");
             }
         }
         io.to("room" + roomId).emit("resignation", username);

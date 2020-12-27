@@ -82,6 +82,20 @@ p {
     background-color: yellow;
 }
 
+.playerinfo {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.playerinfo > div {
+    display: inline-block;
+}
+
+.player-time-info {
+    float: right;
+}
+
 .gray {
     background-color: lightgray;
     padding: 5px;

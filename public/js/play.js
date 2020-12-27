@@ -14,6 +14,9 @@ var opponent;
 
 var roomId;
 
+var player1time, player2time;
+var timeUpdater;
+
 var currentLineNumber;
 var lastMoveColor;
 
@@ -97,6 +100,18 @@ function announce (announcer, msg) {
     $('#arbiterTranscript').append('<div class="' + currentChatBackgroundColor + ' newMessage">' + announcer + ": " + msg + "</div>");
     $('#arbiterTranscript').scrollTop($('#arbiterTranscript')[0].scrollHeight);
     currentChatBackgroundColor = currentChatBackgroundColor == 'gray'? 'white': 'gray';
+}
+
+function timeInt2Str (timeInt) {
+    if (timeInt < 0) {
+        timeInt = 0;
+    }
+    var minutes = Math.floor(timeInt / 60);
+    var seconds = timeInt % 60;
+    if (seconds < 10) {
+        seconds = "0" + seconds;
+    }
+    return minutes + ":" + seconds;
 }
 
 $(document).ready(function () {
@@ -185,11 +200,11 @@ $(document).ready(function () {
         socket.emit("resign", roomId);    
     });
     
-    socket.on("newgame", function(data) {
+    socket.on("newgame", function(player1, player2, id) {
  
-        var p1 = data.player1;
-        var p2 = data.player2;
-        var id = data.id;
+        var p1 = player1;
+        var p2 = player2;
+        var id = id;
         var myRating, opponentRating;
         if (username==p1.username || username==p2.username) {
             socket.emit("joinGame", id);
@@ -217,10 +232,14 @@ $(document).ready(function () {
                 opponentRating = p1.rating;
                 myRating = p2.rating;
             }
-            $("#player1info").text(username + " (" + myRating + ")");
-            $("#player1info").css("color", "black");
-            $("#player2info").text(opponent + " (" + opponentRating + ")");
-            $("#player2info").css("color", "black");
+            $("#player1info-username").text(username + " (" + myRating + ")");
+            $("#player2info-username").text(opponent + " (" + opponentRating + ")");
+            
+            $("#player1info-username").css("color", "black");
+            $("#player2info-username").css("color", "black");
+            $("#player1info-time").css("color", "black");
+            $("#player2info-time").css("color", "black");
+
             $("cOptions").show();
         }
         
@@ -330,11 +349,12 @@ $(document).ready(function () {
         socket.emit("username", u);
     });
     
-    socket.on("gameover", function(pgn) {
-        console.log("Here");
+    socket.on("gameover", function(pgn, reason) {
         inGame = false;
+        arbiterAnnounce("Game over. Reason: " + reason);
         arbiterAnnounce("Game history: " + pgn);
         $("#gameOptions").hide();
+        clearInterval(timeUpdater);
         socket.emit("leaveGame", roomId);
     });
     
@@ -352,6 +372,37 @@ $(document).ready(function () {
     socket.on("updateNumOnline", function (numOnline) {
         $("#player-count").text("Players online: " + numOnline);
     });
+    
+    socket.on("timeState", function (timeState) {
+        console.log("Receiving time state " + JSON.stringify(timeState));
+        player1time = timeState.player1time;
+        player2time = timeState.player2time;
+        let sideToMove = timeState.runningSide;
+        clearInterval(timeUpdater);
+        
+        if (myColor === "white") {
+            var player1timeDiv = "#player1info-time";
+            var player2timeDiv = "#player2info-time";
+        } else {
+            var player1timeDiv = "#player2info-time";
+            var player2timeDiv = "#player1info-time";            
+        }
+        
+        $(player1timeDiv).text(timeInt2Str(player1time));
+        $(player2timeDiv).text(timeInt2Str(player2time)); 
+        
+        timeUpdater = setInterval(function () {
+            if (sideToMove == "white") {
+                player1time-=1;
+            }
+            if (sideToMove == "black") {
+                player2time-=1;
+            }
+            $(player1timeDiv).text(timeInt2Str(player1time));
+            $(player2timeDiv).text(timeInt2Str(player2time));
+        }, 1000);
+        
+    })
     
     $("#pawnCaptures").click(function(e) { 
         socket.emit("message", "hello world!");
