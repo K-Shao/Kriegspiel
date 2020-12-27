@@ -190,8 +190,14 @@ function buildHiddenMoveCode (capture, to, check, checkmate) {
 }
 
 var Game = function (player1, player2) {
-    this.player1 = player1;
-    this.player2 = player2;
+    if (Math.random() > 0.5) {
+        this.player1 = player1;
+        this.player2 = player2;        
+    } else {
+        this.player1 = player2;
+        this.player2 = player1;
+    }
+
     this.chess = new Chess();
     this.board1 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
     this.board2 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
@@ -288,7 +294,6 @@ io.on("connection", function(socket) {
     
     socket.on("openChallenge", function() {
         console.log("Open challenge from " + username);
-        console.log(openChallenges);
         for (var challenge of openChallenges) {
             if (challenge.username == username) {
                 return;
